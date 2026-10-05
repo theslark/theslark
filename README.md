@@ -67,6 +67,57 @@ firewalls, virtualization platforms, and the Linux systems underneath them.
 
 ---
 
+## Infrastructure Lab
+
+I run a live lab that spans the whole stack — real network hardware, a
+hypervisor, and virtualization on top. It is where I test changes before they go
+anywhere near production, and most of what is in the repos above is documented
+from it.
+
+```
+                      ┌──────────────────┐
+                      │  Nexlinx Fiber   │
+                      └────────┬─────────┘
+                               │ VLAN 200
+                    ┌──────────┴──────────┐
+                    │  Cisco Catalyst     │
+                    │  4500E Core Switch  │
+                    │  Gi2/14 / Gi2/21    │
+                    └──────────┬──────────┘
+                               │ VLAN 150
+                    ┌──────────┴──────────┐
+                    │  Dell PowerEdge     │
+                    │  R710 · Proxmox VE  │
+                    └──────────┬──────────┘
+            ┌─────────────────┴─────────────────┐
+            ▼                 ▼                 ▼
+     ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+     │  OPNsense   │    │  Windows 10 │    │  dc-mon-01  │
+     │  gateway +  │    │     VM      │    │ Ubuntu mon- │
+     │  DNS + VPN  │    │             │    │ itoring     │
+     │  10.50.0.1  │    │    DHCP     │    │  10.50.0.21 │
+     └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+**Network** — Cisco Catalyst 4500E core switch, Cisco 2911 edge router, Cisco
+ASA firewall, Nexlinx fiber WAN plus a legacy ISP path kept alongside it for
+comparison. 19 VLANs, dual WAN, NAT, HSRP, DHCP, NTP and syslog.
+
+**Virtualization** — Proxmox VE on a Dell PowerEdge R710 (dual Xeon, 144 GB,
+RAID), running OPNsense as gateway and DNS, a Windows workstation, and a
+dedicated Ubuntu monitoring host.
+
+**Remote access** — WireGuard endpoint on OPNsense.
+
+**What's next** — OpenStack, Ceph and Kubernetes on the same Proxmox cluster,
+then hybrid connectivity between the lab and AWS.
+
+Every device is documented individually with model, serial, firmware, interface
+addressing and access details, structured so the repository tree reads as the
+physical topology. → [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-VMEnvironment)
+
+---
+
 ## Projects
 
 The repos here document real infrastructure rather than toy examples. The
