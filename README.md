@@ -2,15 +2,22 @@
 
 # Sohail Ishaque
 
-**Cloud Infrastructure Engineer · Network & Systems**
+**Cloud Infrastructure Engineer · Network & Systems Engineer**
 
-I design and run cloud and network infrastructure — VPCs, routing and switching,
-firewalls, virtualization platforms, and the Linux systems underneath them.
+I design, build, and automate cloud and on-prem infrastructure — VPCs, routing/switching, firewalls, virtualization, and Linux systems. I document everything I build.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sohail-ishaque-064995404/)
 [![X](https://img.shields.io/badge/X-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/_Slark_X)
 [![Email](https://img.shields.io/badge/Email-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:t9fiction@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-theslark-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/theslark)
 [![Location](https://img.shields.io/badge/Lahore-Pakistan-217346?style=flat-square&logo=google-maps&logoColor=white)](https://www.google.com/maps/place/Lahore,+Pakistan)
+
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white)
+![Cisco](https://img.shields.io/badge/Cisco-1BA0D7?style=flat-square&logo=cisco&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![Proxmox](https://img.shields.io/badge/Proxmox-E57000?style=flat-square&logo=proxmox&logoColor=white)
 
 </div>
 
@@ -69,55 +76,42 @@ firewalls, virtualization platforms, and the Linux systems underneath them.
 
 ## Infrastructure Lab
 
-I run a live lab that spans the whole stack — real network hardware, a
-hypervisor, and virtualization on top. It is where I test changes before they go
-anywhere near production, and most of what is in the repos above is documented
-from it.
+I run a live, production-like lab that spans real network hardware, enterprise storage, and a private cloud — built to validate changes before production. Every device is documented with model, firmware, interfaces, and addressing in a topology-mirroring repo structure.
 
 ```
-                      ┌──────────────────┐
-                      │  Nexlinx Fiber   │
-                      └────────┬─────────┘
-                               │ VLAN 200
-                    ┌──────────┴──────────┐
-                    │  Cisco Catalyst     │
-                    │  4500E Core Switch  │
-                    │  Gi2/14 / Gi2/21    │
-                    └──────────┬──────────┘
-                               │ VLAN 150
-                    ┌──────────┴──────────┐
-                    │  Dell PowerEdge     │
-                    │  R710 · Proxmox VE  │
-                    └──────────┬──────────┘
-            ┌─────────────────┴─────────────────┐
-            ▼                 ▼                 ▼
-     ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-     │  OPNsense   │    │  Windows 10 │    │  dc-mon-01  │
-     │  gateway +  │    │     VM      │    │ Ubuntu mon- │
-     │  DNS + VPN  │    │             │    │ itoring     │
-     │  10.50.0.1  │    │    DHCP     │    │  10.50.0.21 │
-     └─────────────┘    └─────────────┘    └─────────────┘
+                        Nexlinx Fiber Modem
+                                │
+                           ┌────┴────┐
+                           │Gi2/14   │ VLAN 200
+                           │   CSW   │ (Catalyst 4500E)
+                           │Gi2/21   │
+                           └────┬────┘
+                                │
+                           ┌────┴────┐
+                           │SW-SRV-01│ Dell PowerConnect 6248
+                           │  LAG    │ (Gi2/10,21,22 from CSW)
+                           └────┬────┘
+                                │
+                        ┌───────┼─────────────────────────┐
+                        ▼       ▼           ▼           ▼
+                     R710   NAS (EQ)   Blade Srvs   (Mgmt)
+                    Proxmox 10.50.0.100 VLAN150   (planned)
+                    10.50.0.20
 ```
 
-The diagram shows the core path; the Proxmox host also runs the Nextcloud server
-(`10.50.0.30`) documented under Projects.
+**Core Network** — Cisco Catalyst 4500E (core), Cisco 2911 (edge/router), Cisco ASA (firewall). Dual-WAN with Nexlinx fiber (primary, via OPNsense) and legacy ISP path retained for comparison. VLAN segmentation, HSRP, NAT/PAT, ACLs, DHCP, NTP, syslog.
 
-**Network** — Cisco Catalyst 4500E core switch, Cisco 2911 edge router, Cisco
-ASA firewall, Nexlinx fiber WAN plus a legacy ISP path kept alongside it for
-comparison. 19 VLANs, dual WAN, NAT, HSRP, DHCP, NTP and syslog.
+**Private Cloud & Virtualization** — Proxmox VE on Dell PowerEdge R710 (dual Xeon, 144 GB RAM, RAID) hosting an Active Directory domain (`lab.local`), OPNsense gateway/firewall/DHCP/WireGuard/Caddy, monitoring (Grafana), and application workloads. Domain: DC-AD-01 (10.50.0.15, primary DNS) / DC-AD-02 (10.50.0.17, secondary DNS).
 
-**Virtualization** — Proxmox VE on a Dell PowerEdge R710 (dual Xeon, 144 GB,
-RAID), running OPNsense as gateway, DNS and firewall, a Windows workstation, a
-dedicated Ubuntu monitoring host, and an Ubuntu Nextcloud server.
+**Storage** — Dell EqualLogic PS6000 iSCSI SAN on VLAN 150 (group IP 10.50.0.100, members 10.50.0.101-103) integrated with lab storage workflows.
 
-**Remote access** — WireGuard endpoint on OPNsense.
+**Services** — Self-hosted Nextcloud (Docker Compose: Nextcloud, MariaDB, Redis) behind OPNsense/Caddy with public access via DuckDNS (`t9fiction.duckdns.org`), internal monitoring, domain services, and VPN remote access.
 
-**What's next** — OpenStack, Ceph and Kubernetes on the same Proxmox cluster,
-then hybrid connectivity between the lab and AWS.
+**Network Design** — Consolidated LAN on `10.50.0.0/16` (VLAN 150) with OPNsense (10.50.0.1) as gateway/DHCP, routed through SW-SRV-01 aggregation switch to core.
 
-Every device is documented individually with model, serial, firmware, interface
-addressing and access details, structured so the repository tree reads as the
-physical topology. → [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-VMEnvironment)
+**What's next** — OpenStack, Ceph, and Kubernetes on the Proxmox cluster, expanding to hybrid AWS connectivity.
+
+→ [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-VMEnvironment) | [NSSTH-Network](https://github.com/theslark/NSSTH-Network)
 
 ---
 
@@ -140,59 +134,39 @@ multi-region hybrid capstone.
 
 ### [NSSTH-Network](https://github.com/theslark/NSSTH-Network) — production network configuration
 
-Complete running configs for a three-device core: Cisco 2911 edge router, ASA
-firewall, Catalyst 4500E core switch. 19 VLANs, 10 DHCP pools, PAT plus static
-inbound NAT, HSRP, and a full static routing table across all three devices.
+Complete running configs for Cisco 2911 (edge router), ASA firewall, and Catalyst 4500E (core switch). Includes multi-VLAN design, HSRP, PAT and static inbound NAT, ACL policy, DHCP, routing, staged deployment, and migration playbooks (from legacy `193.168.x.x` to `10.x.0.0/16`). Full verification checklists and console/password recovery procedures included.
 
-Includes the IP scheme migration from a legacy `193.168.x.x` layout to a clean
-`10.x.0.0/16` one, the ACL that gates which VLANs get internet, staged
-deployment order, console password recovery, and a post-deployment verification
-checklist.
+**Cisco IOS · ASA OS · Catalyst 4500E · VLANs · HSRP · NAT/PAT · ACLs · DHCP · Routing**
 
-**Cisco IOS · ASA · Catalyst 4500E · NAT · ACLs · DHCP · HSRP**
+### [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-VMEnvironment) — private cloud & hybrid lab
 
-### [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-VMEnvironment) — private cloud lab
+End-to-end documentation of a production-like lab: Cisco core/edge/ASA, Dell PowerConnect 6248 aggregation, Proxmox VE on Dell R710, Dell EqualLogic PS6000 iSCSI SAN, and a full virtualized stack.
 
-The cloud lab built on that network. OPNsense as gateway, firewall and DNS for
-the whole LAN; Proxmox VE on a Dell R710 hosting it; WireGuard for remote access;
-Nexlinx fiber as primary WAN with the older ISP path kept as legacy.
+**OPNsense** as gateway/firewall/DHCP/WireGuard/Caddy with reverse proxy; **Active Directory** (`lab.local`) with dual DCs (DC-AD-01/02); monitoring via **Grafana** on dc-mon-01; self-hosted **Nextcloud** (Docker Compose, MariaDB, Redis) on fileserver (10.50.0.30). LAN consolidated to `10.50.0.0/16` (VLAN 150), WAN via Nexlinx fiber on VLAN 200 with legacy ISP path preserved.
 
-The folder structure mirrors the physical cabling, so the repo tree reads as a
-topology diagram — one folder per device, nested by how the devices connect.
+The repo tree mirrors physical topology — folder structure = cabling — with per-device docs, IP tables, and verification checklists.
 
-**OPNsense · Proxmox VE · WireGuard · VLAN consolidation · Ubuntu · VMware / Hyper-V**
+**OPNsense · Proxmox VE · Active Directory · WireGuard · Caddy · Docker Compose · Dell EqualLogic iSCSI · VLANs · Cisco IOS/ASA · Nextcloud · Grafana**
 
 ### [Self-Hosted Nextcloud](https://t9fiction.duckdns.org) — private cloud file platform
 
-A self-hosted Nextcloud platform running on the lab: an Ubuntu VM on Proxmox,
-a Docker Compose stack with Nextcloud, MariaDB and Redis, and Caddy in front as
-reverse proxy. The service is published over HTTPS through a DuckDNS hostname,
-with OPNsense permitting inbound traffic on ports 80 and 443.
+Self-hosted Nextcloud on Ubuntu VM (10.50.0.30) in Proxmox, deployed via Docker Compose (Nextcloud, MariaDB, Redis). Fronted by Caddy reverse proxy on OPNsense with HTTPS via DuckDNS (`t9fiction.duckdns.org`); inbound 80/443 allowed through OPNsense. Integrated with lab domain/DNS, role-based groups configured, and SMTP/TLS to Gmail validated. Storage layout planned for Dell EqualLogic iSCSI mount (`/srv/nas/NextcloudData`).
 
-The public login page is live. The public hostname is in Nextcloud's trusted
-domains, admin and regular `users` accounts are separated into distinct groups,
-and outbound SMTP/TLS connectivity to Gmail has been verified. End-to-end
-registration and email delivery are still being validated before public
-self-registration is claimed as fully operational.
-
-**Proxmox VE · Docker Compose · Nextcloud · Caddy · OPNsense · MariaDB · Redis · DuckDNS · TLS**
+**Proxmox VE · Docker Compose · Nextcloud · Caddy · OPNsense · MariaDB · Redis · DuckDNS · TLS · iSCSI**
 
 ---
 
 ## Currently
 
-- Building out the private cloud on Proxmox toward OpenStack, Ceph and Kubernetes
-- Extending the AWS path toward hybrid connectivity with the on-prem network
-- Consolidating the lab network onto OPNsense as single gateway and DNS
-- Hardening the public Nextcloud service — backups, monitoring, deployment automation and IaC
-- Hardening and rotating the credentials that surfaced while documenting these systems
+- Building private cloud on Proxmox toward **OpenStack**, **Ceph**, and **Kubernetes**
+- Extending AWS networking (Transit Gateway, Direct Connect) toward **hybrid connectivity** with on-prem lab
+- Operating dual-DC **Active Directory (lab.local)**, centralized DNS/DHCP via OPNsense
+- Hardening self-hosted Nextcloud — backups, monitoring, automation, and IaC
+- Expanding observability with Grafana/Prometheus and tightening security hardening
 
 ## Approach
 
-Document it or it didn't happen. Every device I touch gets a repo, a topology, an
-addressing table and a verification checklist. When something breaks at 2am the
-config and the diagram already exist, so the fix is a command instead of an
-archaeology project.
+**Document it or it didn't happen.** Every device gets a repo entry, topology diagram, IP table, and verification checklist. If it breaks at 2 AM, the fix is a command — not archaeology.
 
 ## Connect
 
