@@ -99,13 +99,16 @@ from it.
      └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
+The diagram shows the core path; the Proxmox host also runs the Nextcloud server
+(`10.50.0.30`) documented under Projects.
+
 **Network** — Cisco Catalyst 4500E core switch, Cisco 2911 edge router, Cisco
 ASA firewall, Nexlinx fiber WAN plus a legacy ISP path kept alongside it for
 comparison. 19 VLANs, dual WAN, NAT, HSRP, DHCP, NTP and syslog.
 
 **Virtualization** — Proxmox VE on a Dell PowerEdge R710 (dual Xeon, 144 GB,
-RAID), running OPNsense as gateway and DNS, a Windows workstation, and a
-dedicated Ubuntu monitoring host.
+RAID), running OPNsense as gateway, DNS and firewall, a Windows workstation, a
+dedicated Ubuntu monitoring host, and an Ubuntu Nextcloud server.
 
 **Remote access** — WireGuard endpoint on OPNsense.
 
@@ -120,7 +123,7 @@ physical topology. → [NSSTH-VMEnvironment](https://github.com/theslark/NSSTH-V
 
 ## Projects
 
-The repos here document real infrastructure rather than toy examples. The
+The work here documents real infrastructure rather than toy examples. The
 configs are verbatim captures of equipment I administer.
 
 ### [aws-learning-journey](https://github.com/theslark/aws-learning-journey) — AWS networking curriculum
@@ -159,6 +162,21 @@ topology diagram — one folder per device, nested by how the devices connect.
 
 **OPNsense · Proxmox VE · WireGuard · VLAN consolidation · Ubuntu · VMware / Hyper-V**
 
+### [Self-Hosted Nextcloud](https://t9fiction.duckdns.org) — private cloud file platform
+
+A self-hosted Nextcloud platform running on the lab: an Ubuntu VM on Proxmox,
+a Docker Compose stack with Nextcloud, MariaDB and Redis, and Caddy in front as
+reverse proxy. The service is published over HTTPS through a DuckDNS hostname,
+with OPNsense permitting inbound traffic on ports 80 and 443.
+
+The public login page is live. The public hostname is in Nextcloud's trusted
+domains, admin and regular `users` accounts are separated into distinct groups,
+and outbound SMTP/TLS connectivity to Gmail has been verified. End-to-end
+registration and email delivery are still being validated before public
+self-registration is claimed as fully operational.
+
+**Proxmox VE · Docker Compose · Nextcloud · Caddy · OPNsense · MariaDB · Redis · DuckDNS · TLS**
+
 ---
 
 ## Currently
@@ -166,7 +184,8 @@ topology diagram — one folder per device, nested by how the devices connect.
 - Building out the private cloud on Proxmox toward OpenStack, Ceph and Kubernetes
 - Extending the AWS path toward hybrid connectivity with the on-prem network
 - Consolidating the lab network onto OPNsense as single gateway and DNS
-- Hardening and rotating the credentials that surfaced while documenting these repos
+- Hardening the public Nextcloud service — backups, monitoring, deployment automation and IaC
+- Hardening and rotating the credentials that surfaced while documenting these systems
 
 ## Approach
 
